@@ -143,7 +143,7 @@ def PlayRound(Categories : list[Category], lives : int):
     ConnectionsFound = 0
     for Cat in FoundCategories + UnfoundCategories:
         if input("What connects the category \"" + ", ".join(Cat.Clues) + "\"? ").lower() == Cat.Connection:
-            print("Correct!")
+            print("Correct!\n")
             ConnectionsFound += 1
         else:
             print(f"Wrong! The connection was {Cat.Connection}\n")
