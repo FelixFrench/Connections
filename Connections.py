@@ -13,7 +13,7 @@ class Category:
 
 def GetSynonymCategory(NumSynonyms : int) -> Category:
     """
-    Get single category where the connection is a word for which all the clues are synonyms.
+    Get a single category where the connection is a word for which all the clues are synonyms.
         Parameters:
             NumSynonyms (int):    The number of synonyms to have in the category's clues.
         Returns:
@@ -54,11 +54,12 @@ def GetSynonymCategory(NumSynonyms : int) -> Category:
     return NewCategory
 
 def GetCategories(numCategories : int, cluesPerCategory : int) -> list[Category]:
-    """Get a list of categories with different connections.
-    Clues may be duplicated between categories!
+    """ Get a list of categories with different connections. Clues may be duplicated between categories!
         Parameters:
             numCategories (int):    The number of categories to return.
             cluesPerCategory (int): The number of clues each category should have.
+        Returns:
+            list[Category] : A list of categories, each one being a list of clues with a connecting word.
     """
 
     print("Loading categories", end="")
@@ -80,7 +81,15 @@ def GetCategories(numCategories : int, cluesPerCategory : int) -> list[Category]
     return Categories
 
 
-def PlayRound(Categories : list[Category], lives : int):
+def PlayRound(Categories : list[Category], lives : int) -> int:
+    """ Play a round of the categories game. This includes displaying the grid, the guessing the categories and guessing the connections.
+
+        Parameters:
+            Categories (list[Category]):    The list of categories to play with, each one being a list of clues with a connecting word.
+            lives (int):                    The number of lives the player has for this round.
+        Returns:
+            int: The score gained during this round.
+    """
     
     NumCategories = len(Categories)
     WordsPerCategory = len(Categories[0].Clues)
@@ -140,6 +149,7 @@ def PlayRound(Categories : list[Category], lives : int):
             FoundCategories += [UnfoundCategories[0]]
             del UnfoundCategories[0]
 
+    # Now that the player has finished trying to group up the categories, let them try to guess the connecting word for each one.
     ConnectionsFound = 0
     for Cat in FoundCategories + UnfoundCategories:
         if input("What connects the category \"" + ", ".join(Cat.Clues) + "\"? ").lower() == Cat.Connection:
@@ -148,14 +158,15 @@ def PlayRound(Categories : list[Category], lives : int):
         else:
             print(f"Wrong! The connection was {Cat.Connection}\n")
 
+    # Print the end of round summary
     if len(FoundCategories) != 0:
         print("You found:")
-        # Print each connection with its synonym words
+        # Print each found connection with its synonym words
         print(tabulate([[Cat.Connection, ", ".join(Cat.Clues)] for Cat in FoundCategories]))
 
     if len(UnfoundCategories) != 0:
         print("You missed:")
-        # Print each connection with its synonym words
+        # Print each missed connection with its synonym words
         print(tabulate([[Cat.Connection, ", ".join(Cat.Clues)] for Cat in UnfoundCategories]))
 
     return len(FoundCategories) + ConnectionsFound
@@ -164,6 +175,9 @@ ROUNDS = 5
 LIVES = 3
 
 print("Lets's play connections!")
+
+# Attempt to load the leaderboard from a pickle file and print its current state.
+# If the file doesn't exist, a new leaderboard is created.
 try:
     with open("leaderboard.pkl", 'rb') as LeaderboardFile:
         Leaderboard = pickle.load(LeaderboardFile)
@@ -175,11 +189,13 @@ if Leaderboard is not None:
     print(tabulate(sorted([[x, Leaderboard[x]] for x in Leaderboard], key=lambda y: y[1], reverse=True)))
 else:
     Leaderboard = dict()
+
+# User inputs
 username = input("What's your name? ")
+gridsize = int(input("What grid size do you want to play? (4 is reccomended) "))
 
-gridsize = int(input("What grid size do you want to play? "))
 
-
+# Play rounds
 score = 0
 for round in range(ROUNDS):
 
@@ -195,6 +211,7 @@ for round in range(ROUNDS):
         print(f"End of round {round + 1}, current score: {score}")
     print()
 
+# Game finished: Display new leaderboard and save it to a file
 print(f"Final score: {score}")
 
 Leaderboard[username] = score
